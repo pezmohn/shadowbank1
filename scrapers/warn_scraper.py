@@ -2,11 +2,15 @@
 
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
+from io import StringIO
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,106 +27,188 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# MOCK DATA - Replace this section with real scraping logic
+# NEW YORK STATE WARN SCRAPER
 # =============================================================================
 
-def get_mock_warn_data():
-    """Return mock WARN notice data for MVP testing.
+NY_WARN_URL = "https://dol.ny.gov/warn-notices"
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+def fetch_ny_warn_page():
+    """Fetch the NY WARN page with retry logic.
 
     Returns:
-        List of WARN notice dictionaries.
+        HTML content of the page.
+
+    Raises:
+        requests.RequestException: If all retries fail.
     """
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    return [
-        {
-            "company": "Tech Layoff Inc",
-            "state": "CA",
-            "employees": 150,
-            "date_filed": today
-        },
-        {
-            "company": "Silicon Valley Dynamics",
-            "state": "CA",
-            "employees": 320,
-            "date_filed": today
-        },
-        {
-            "company": "Northeast Manufacturing Co",
-            "state": "NY",
-            "employees": 85,
-            "date_filed": today
-        },
-        {
-            "company": "Midwest Logistics Partners",
-            "state": "OH",
-            "employees": 210,
-            "date_filed": today
-        },
-        {
-            "company": "Gulf Coast Energy Services",
-            "state": "TX",
-            "employees": 175,
-            "date_filed": today
-        }
-    ]
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    response = requests.get(NY_WARN_URL, headers=headers, timeout=30)
+    response.raise_for_status()
+    return response.text
 
 
-# =============================================================================
-# REAL SCRAPING LOGIC - Uncomment and implement when ready
-# =============================================================================
-
-def scrape_state_warn_page(state_url, state_code):
-    """Scrape WARN notices from a state's WARN page.
+def parse_date(date_str):
+    """Parse date string to standardized format.
 
     Args:
-        state_url: URL of the state WARN page.
-        state_code: Two-letter state code (e.g., "CA").
+        date_str: Date string in various formats.
 
     Returns:
-        List of WARN notice dictionaries from this state.
+        Date in YYYY-MM-DD format or None if parsing fails.
+    """
+    if pd.isna(date_str) or not date_str:
+        return None
 
-    Example implementation for California EDD:
-        url = "https://edd.ca.gov/jobs_and_training/layoff_services_warn.htm"
+    date_str = str(date_str).strip()
+
+    # Try common date formats
+    formats = [
+        "%m/%d/%Y",
+        "%m-%d-%Y",
+        "%Y-%m-%d",
+        "%B %d, %Y",
+        "%b %d, %Y",
+        "%m/%d/%y",
+    ]
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+
+    return None
+
+
+def parse_employees(emp_str):
+    """Parse employee count from string.
+
+    Args:
+        emp_str: Employee count string (may contain non-numeric chars).
+
+    Returns:
+        Integer employee count or 0 if parsing fails.
+    """
+    if pd.isna(emp_str):
+        return 0
+
+    # Extract digits only
+    digits = "".join(filter(str.isdigit, str(emp_str)))
+    return int(digits) if digits else 0
+
+
+def scrape_ny_warn_notices():
+    """Scrape WARN notices from New York State Department of Labor.
+
+    Returns:
+        List of WARN notice dictionaries matching the database schema:
+        - company: Company name
+        - state: "NY"
+        - employees: Number of affected employees (0 if not available)
+        - date_filed: Date in YYYY-MM-DD format
     """
     notices = []
 
     try:
-        # TODO: Implement real scraping logic
-        # response = requests.get(state_url, timeout=30)
-        # response.raise_for_status()
-        # soup = BeautifulSoup(response.text, "html.parser")
-        #
-        # # Find the WARN table - structure varies by state
-        # table = soup.find("table", {"class": "warn-table"})
-        # if table:
-        #     rows = table.find_all("tr")[1:]  # Skip header
-        #     for row in rows:
-        #         cols = row.find_all("td")
-        #         if len(cols) >= 3:
-        #             notices.append({
-        #                 "company": cols[0].get_text(strip=True),
-        #                 "state": state_code,
-        #                 "employees": int(cols[2].get_text(strip=True)),
-        #                 "date_filed": cols[1].get_text(strip=True)
-        #             })
+        logger.info(f"Fetching NY WARN data from {NY_WARN_URL}")
+        html_content = fetch_ny_warn_page()
 
-        logger.info(f"Scraped {len(notices)} notices from {state_code}")
+        # Use pandas to extract tables from HTML with StringIO wrapper
+        tables = pd.read_html(StringIO(html_content), flavor="lxml")
+
+        if not tables:
+            logger.warning("No tables found on NY WARN page")
+            return notices
+
+        # The WARN table is typically the first/main table
+        df = tables[0]
+        logger.info(f"Found table with {len(df)} rows and columns: {list(df.columns)}")
+
+        # NY DOL specific column mapping
+        # Columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+        column_mapping = {}
+        for col in df.columns:
+            col_lower = str(col).lower()
+            if "company" in col_lower or "employer" in col_lower:
+                column_mapping[col] = "Company"
+            elif "date posted" in col_lower or "posted" in col_lower:
+                # Use "Date Posted" as the primary date
+                column_mapping[col] = "Date"
+            elif "employee" in col_lower or "worker" in col_lower or "affected" in col_lower:
+                column_mapping[col] = "Employees"
+            elif "region" in col_lower:
+                column_mapping[col] = "Region"
+
+        df = df.rename(columns=column_mapping)
+        logger.info(f"Mapped columns: {column_mapping}")
+
+        # Ensure required columns exist
+        if "Company" not in df.columns:
+            df = df.rename(columns={df.columns[0]: "Company"})
+
+        if "Date" not in df.columns:
+            # Fallback: look for any date-like column
+            for col in df.columns:
+                if "date" in str(col).lower():
+                    df = df.rename(columns={col: "Date"})
+                    break
+
+        # Filter for last 7 days
+        cutoff_date = datetime.now() - timedelta(days=7)
+        logger.info(f"Filtering for notices after {cutoff_date.strftime('%Y-%m-%d')}")
+
+        for _, row in df.iterrows():
+            try:
+                company = str(row.get("Company", "")).strip()
+                if not company or company.lower() == "nan":
+                    continue
+
+                date_filed = parse_date(row.get("Date"))
+                if not date_filed:
+                    continue
+
+                # Check if within last 7 days
+                try:
+                    notice_date = datetime.strptime(date_filed, "%Y-%m-%d")
+                    if notice_date < cutoff_date:
+                        continue
+                except ValueError:
+                    continue
+
+                # NY table may not have employee count - default to 0
+                employees = parse_employees(row.get("Employees", 0))
+
+                notice = {
+                    "company": company,
+                    "state": "NY",
+                    "employees": employees,
+                    "date_filed": date_filed
+                }
+                notices.append(notice)
+
+            except Exception as e:
+                logger.warning(f"Failed to parse row: {e}")
+                continue
+
+        logger.info(f"Scraped {len(notices)} NY WARN notices from last 7 days")
 
     except requests.RequestException as e:
-        logger.error(f"Failed to fetch {state_url}: {e}")
+        logger.error(f"Failed to fetch NY WARN page: {e}")
+    except ValueError as e:
+        logger.error(f"No tables found on NY WARN page: {e}")
     except Exception as e:
-        logger.error(f"Failed to parse {state_code} WARN page: {e}")
+        logger.error(f"Failed to parse NY WARN page: {e}")
 
     return notices
 
 
-# State WARN page URLs - add more as needed
+# State WARN page URLs - for future expansion
 STATE_WARN_URLS = {
-    "CA": "https://edd.ca.gov/jobs_and_training/layoff_services_warn.htm",
     "NY": "https://dol.ny.gov/warn-notices",
-    "TX": "https://www.twc.texas.gov/businesses/worker-adjustment-and-retraining-notification-warn-notices",
-    "OH": "https://jfs.ohio.gov/warn/",
 }
 
 
@@ -130,11 +216,11 @@ STATE_WARN_URLS = {
 # MAIN SCRAPER FUNCTION
 # =============================================================================
 
-def scrape_warn_sites(use_mock=True):
+def scrape_warn_sites():
     """Scrape WARN notices from state websites.
 
-    Args:
-        use_mock: If True, return mock data instead of scraping.
+    Currently scrapes New York State. Additional states can be added
+    by implementing state-specific scrapers.
 
     Returns:
         List of WARN notice dictionaries with keys:
@@ -143,31 +229,29 @@ def scrape_warn_sites(use_mock=True):
         - employees: Number of affected employees
         - date_filed: Date the notice was filed
     """
-    if use_mock:
-        logger.info("Using mock WARN data")
-        return get_mock_warn_data()
-
-    # Real scraping mode
     all_notices = []
 
-    for state_code, url in STATE_WARN_URLS.items():
-        try:
-            notices = scrape_state_warn_page(url, state_code)
-            all_notices.extend(notices)
-        except Exception as e:
-            # Never crash the main loop - log and continue
-            logger.error(f"Error scraping {state_code}: {e}")
-            continue
+    # Scrape New York
+    try:
+        ny_notices = scrape_ny_warn_notices()
+        all_notices.extend(ny_notices)
+    except Exception as e:
+        # Never crash the main loop - log and continue
+        logger.error(f"Error scraping NY: {e}")
+
+    # Add more states here as scrapers are implemented
+    # try:
+    #     ca_notices = scrape_ca_warn_notices()
+    #     all_notices.extend(ca_notices)
+    # except Exception as e:
+    #     logger.error(f"Error scraping CA: {e}")
 
     logger.info(f"Scraped {len(all_notices)} total WARN notices")
     return all_notices
 
 
-def run_scraper(use_mock=True):
+def run_scraper():
     """Run the WARN scraper pipeline.
-
-    Args:
-        use_mock: If True, use mock data instead of real scraping.
 
     Returns:
         Number of records saved.
@@ -178,8 +262,8 @@ def run_scraper(use_mock=True):
         # Initialize database
         init_db()
 
-        # Get WARN notices
-        notices = scrape_warn_sites(use_mock=use_mock)
+        # Get WARN notices from real sources
+        notices = scrape_warn_sites()
 
         # Save to database
         saved_count = 0
@@ -200,7 +284,7 @@ def run_scraper(use_mock=True):
 
 
 if __name__ == "__main__":
-    print("Running WARN Scraper (MVP mode with mock data)...")
-    count = run_scraper(use_mock=True)
+    print("Running WARN Scraper (NY State)...")
+    count = run_scraper()
     print(f"Saved {count} WARN notices to database")
     print(f"Log file: {LOG_PATH}")
