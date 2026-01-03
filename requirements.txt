@@ -3,3 +3,6 @@ beautifulsoup4
 pandas
 streamlit
 requests
+lxml
+html5lib
+tenacity
