@@ -1,12 +1,14 @@
-"""BDC Scraper for SEC 10-K filings."""
+"""BDC Scraper for SEC 10-Q filings - Distress Signal Analysis."""
 
 import logging
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 from sec_edgar_downloader import Downloader
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,13 +23,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Ares Capital Corp CIK
+# Ares Capital Corp CIK and Ticker
 ARES_CIK = "0001287750"
+ARES_TICKER = "ARCC"
 DOWNLOAD_DIR = Path(__file__).parent.parent / "data" / "sec_filings"
 
+# Distress keywords to search for
+DISTRESS_KEYWORDS = [
+    "non-accrual",
+    "nonaccrual",
+    "non accrual",
+    "payment default",
+    "payment-default",
+]
 
-def download_latest_10k():
-    """Download the latest 10-K filing for Ares Capital Corp.
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+def download_latest_10q():
+    """Download the latest 10-Q filing for Ares Capital Corp.
 
     Returns:
         Path to the downloaded filing directory, or None on failure.
@@ -35,137 +48,130 @@ def download_latest_10k():
     try:
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+        logger.info(f"Downloading latest 10-Q for {ARES_TICKER} (CIK: {ARES_CIK})")
         dl = Downloader("ShadowBank", "risk@shadowbank.local", DOWNLOAD_DIR)
-        dl.get("10-K", ARES_CIK, limit=1)
+        dl.get("10-Q", ARES_CIK, limit=1)
 
         # Find the downloaded filing
-        ares_dir = DOWNLOAD_DIR / "sec-edgar-filings" / ARES_CIK / "10-K"
+        ares_dir = DOWNLOAD_DIR / "sec-edgar-filings" / ARES_CIK / "10-Q"
         if ares_dir.exists():
-            filings = list(ares_dir.iterdir())
+            filings = sorted(ares_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
             if filings:
-                logger.info(f"Downloaded 10-K filing to {filings[0]}")
+                logger.info(f"Downloaded 10-Q filing to {filings[0]}")
                 return filings[0]
 
-        logger.warning("No 10-K filing found after download")
+        logger.warning("No 10-Q filing found after download")
         return None
 
     except Exception as e:
-        logger.error(f"Failed to download 10-K: {e}")
+        logger.error(f"Failed to download 10-Q: {e}")
         return None
 
 
-def parse_schedule_of_investments(filing_path):
-    """Parse the Consolidated Schedule of Investments from a 10-K filing.
+def count_distress_keywords(filing_path):
+    """Count distress keywords in a 10-Q filing.
 
     Args:
         filing_path: Path to the filing directory.
 
     Returns:
-        List of loan dictionaries, or empty list on failure.
-
-    Note:
-        This is a placeholder for complex HTML table parsing.
-        Use mock_parse_filing() for MVP testing.
+        Dictionary with keyword counts:
+        - non_accrual_count: Count of 'non-accrual' variations
+        - payment_default_count: Count of 'payment default' variations
+        - total_distress_count: Total of all distress keywords
     """
-    try:
-        # Find the primary document (usually .htm or .html)
-        html_files = list(filing_path.glob("*.htm")) + list(filing_path.glob("*.html"))
+    counts = {
+        "non_accrual_count": 0,
+        "payment_default_count": 0,
+        "total_distress_count": 0
+    }
 
-        if not html_files:
-            logger.warning("No HTML files found in filing")
-            return []
+    try:
+        # Find the primary document - check multiple formats
+        # SEC filings may come as .htm, .html, or full-submission.txt
+        html_files = list(filing_path.glob("*.htm")) + list(filing_path.glob("*.html"))
+        txt_files = list(filing_path.glob("*.txt"))
+
+        if html_files:
+            # Find the largest HTML file (usually the main filing)
+            main_file = max(html_files, key=lambda p: p.stat().st_size)
+        elif txt_files:
+            # Use the full-submission.txt file
+            main_file = max(txt_files, key=lambda p: p.stat().st_size)
+        else:
+            logger.warning("No filing documents found")
+            return counts
+
+        logger.info(f"Parsing filing: {main_file.name} ({main_file.stat().st_size / 1024 / 1024:.1f} MB)")
 
         # Read and parse the filing
-        with open(html_files[0], "r", encoding="utf-8", errors="ignore") as f:
+        with open(main_file, "r", encoding="utf-8", errors="ignore") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
-        # Look for Schedule of Investments section
-        # This is simplified - real parsing would need more sophisticated logic
-        schedule_markers = [
-            "Consolidated Schedule of Investments",
-            "Schedule of Investments",
-            "SCHEDULE OF INVESTMENTS"
+        # Get all text content
+        text = soup.get_text().lower()
+
+        # Count non-accrual variations
+        non_accrual_patterns = [
+            r"non-accrual",
+            r"nonaccrual",
+            r"non\s+accrual",
         ]
+        for pattern in non_accrual_patterns:
+            matches = re.findall(pattern, text)
+            counts["non_accrual_count"] += len(matches)
 
-        for marker in schedule_markers:
-            element = soup.find(string=lambda t: t and marker in t)
-            if element:
-                logger.info(f"Found schedule marker: {marker}")
-                # TODO: Implement actual table parsing logic
-                # For now, return empty and use mock data
-                break
+        # Count payment default variations
+        payment_default_patterns = [
+            r"payment\s+default",
+            r"payment-default",
+        ]
+        for pattern in payment_default_patterns:
+            matches = re.findall(pattern, text)
+            counts["payment_default_count"] += len(matches)
 
-        logger.info("Schedule parsing not yet implemented - use mock_parse_filing()")
-        return []
+        counts["total_distress_count"] = counts["non_accrual_count"] + counts["payment_default_count"]
+
+        logger.info(f"Distress keyword counts: non-accrual={counts['non_accrual_count']}, "
+                   f"payment-default={counts['payment_default_count']}, "
+                   f"total={counts['total_distress_count']}")
+
+        return counts
 
     except Exception as e:
         logger.error(f"Failed to parse filing: {e}")
-        return []
+        return counts
 
 
-def mock_parse_filing():
-    """Generate mock BDC loan data for MVP testing.
+def create_risk_record(distress_counts):
+    """Create a risk record from distress keyword counts.
+
+    Args:
+        distress_counts: Dictionary with keyword counts from count_distress_keywords().
 
     Returns:
-        List of 5 realistic loan dictionaries.
+        Dictionary matching the database schema for bdc_loans.
     """
     today = datetime.now().strftime("%Y-%m-%d")
 
-    mock_loans = [
-        {
-            "borrower": "Apex Software Solutions LLC",
-            "fund": "Ares",
-            "sector": "Technology",
-            "cost": 15_500_000.00,
-            "fair_value": 15_200_000.00,
-            "date_added": today
-        },
-        {
-            "borrower": "Midwest Healthcare Partners",
-            "fund": "Ares",
-            "sector": "Healthcare",
-            "cost": 22_000_000.00,
-            "fair_value": 21_750_000.00,
-            "date_added": today
-        },
-        {
-            "borrower": "Continental Manufacturing Inc",
-            "fund": "Ares",
-            "sector": "Industrials",
-            "cost": 8_750_000.00,
-            "fair_value": 8_400_000.00,
-            "date_added": today
-        },
-        {
-            "borrower": "Summit Business Services Corp",
-            "fund": "Ares",
-            "sector": "Business Services",
-            "cost": 12_300_000.00,
-            "fair_value": 12_300_000.00,
-            "date_added": today
-        },
-        {
-            "borrower": "Pacific Retail Holdings LLC",
-            "fund": "Ares",
-            "sector": "Consumer Retail",
-            "cost": 6_800_000.00,
-            "fair_value": 5_950_000.00,
-            "date_added": today
-        }
-    ]
-
-    logger.info(f"Generated {len(mock_loans)} mock loan records")
-    return mock_loans
+    return {
+        "borrower": "Ares Portfolio Aggregate",
+        "fund": "Ares",
+        "sector": "Diversified",
+        "cost": 0,  # Placeholder
+        "fair_value": distress_counts["non_accrual_count"],  # Distress signal count
+        "date_added": today
+    }
 
 
-def run_scraper(use_mock=True):
+def run_scraper():
     """Run the BDC scraper pipeline.
 
-    Args:
-        use_mock: If True, use mock data instead of parsing real filings.
+    Downloads the latest 10-Q filing for Ares Capital Corp,
+    counts distress keywords, and saves a risk record to the database.
 
     Returns:
-        Number of records saved.
+        Number of records saved (0 or 1).
     """
     try:
         logger.info("Starting BDC scraper run")
@@ -173,29 +179,27 @@ def run_scraper(use_mock=True):
         # Initialize database
         init_db()
 
-        if use_mock:
-            loans = mock_parse_filing()
-        else:
-            # Download and parse real filing
-            filing_path = download_latest_10k()
-            if filing_path:
-                loans = parse_schedule_of_investments(filing_path)
-            else:
-                logger.warning("No filing downloaded, falling back to mock data")
-                loans = mock_parse_filing()
+        # Download the latest 10-Q filing
+        filing_path = download_latest_10q()
 
-        # Save loans to database
-        saved_count = 0
-        for loan in loans:
-            try:
-                save_loan(loan)
-                saved_count += 1
-                logger.info(f"Saved loan: {loan['borrower']}")
-            except Exception as e:
-                logger.error(f"Failed to save loan {loan.get('borrower')}: {e}")
+        if not filing_path:
+            logger.error("Failed to download 10-Q filing")
+            return 0
 
-        logger.info(f"BDC scraper completed: {saved_count}/{len(loans)} records saved")
-        return saved_count
+        # Count distress keywords
+        distress_counts = count_distress_keywords(filing_path)
+
+        # Create and save the risk record
+        risk_record = create_risk_record(distress_counts)
+
+        try:
+            save_loan(risk_record)
+            logger.info(f"Saved risk record: {risk_record['borrower']} "
+                       f"(non-accrual count: {risk_record['fair_value']})")
+            return 1
+        except Exception as e:
+            logger.error(f"Failed to save risk record: {e}")
+            return 0
 
     except Exception as e:
         logger.error(f"BDC scraper failed: {e}")
@@ -203,7 +207,10 @@ def run_scraper(use_mock=True):
 
 
 if __name__ == "__main__":
-    print("Running BDC Scraper (MVP mode with mock data)...")
-    count = run_scraper(use_mock=True)
-    print(f"Saved {count} loan records to database")
+    print("Running BDC Scraper (Ares Capital 10-Q Distress Analysis)...")
+    count = run_scraper()
+    if count > 0:
+        print("Successfully saved Ares risk record to database")
+    else:
+        print("Failed to save risk record - check scraping_log.txt")
     print(f"Log file: {LOG_PATH}")
