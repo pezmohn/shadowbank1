@@ -2,14 +2,12 @@
 
 import logging
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-
 from io import StringIO
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Add parent directory to path for imports
@@ -27,28 +25,75 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# NEW YORK STATE WARN SCRAPER
+# NEW YORK STATE WARN SCRAPER - Year-Specific Archive
 # =============================================================================
 
-NY_WARN_URL = "https://dol.ny.gov/warn-notices"
+def get_ny_warn_url(year):
+    """Generate the NY WARN archive URL for a specific year.
 
-
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def fetch_ny_warn_page():
-    """Fetch the NY WARN page with retry logic.
+    Args:
+        year: The year to generate the URL for.
 
     Returns:
-        HTML content of the page.
+        URL string for the year-specific WARN notices page.
+    """
+    return f"https://dol.ny.gov/{year}-warn-notices"
 
-    Raises:
-        requests.RequestException: If all retries fail.
+
+def fetch_ny_warn_page(url):
+    """Fetch the NY WARN page.
+
+    Args:
+        url: URL to fetch.
+
+    Returns:
+        Tuple of (HTML content, status_code) or (None, status_code) on failure.
     """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
-    response = requests.get(NY_WARN_URL, headers=headers, timeout=30)
-    response.raise_for_status()
-    return response.text
+
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        if response.status_code == 200:
+            return response.text, 200
+        else:
+            return None, response.status_code
+    except requests.RequestException as e:
+        logger.warning(f"Request failed for {url}: {e}")
+        return None, 0
+
+
+def fetch_ny_warn_with_fallback():
+    """Fetch NY WARN data with year fallback mechanism.
+
+    Tries current year first, falls back to previous year, then main page.
+
+    Returns:
+        Tuple of (HTML content, year used) or (None, None) on failure.
+    """
+    current_year = datetime.now().year
+    previous_year = current_year - 1
+
+    # URLs to try in order
+    urls_to_try = [
+        (get_ny_warn_url(current_year), current_year),
+        (get_ny_warn_url(previous_year), previous_year),
+        ("https://dol.ny.gov/warn-notices", current_year),  # Main page fallback
+    ]
+
+    for url, year in urls_to_try:
+        logger.info(f"Trying URL: {url}")
+        html_content, status_code = fetch_ny_warn_page(url)
+
+        if html_content:
+            logger.info(f"Successfully fetched WARN data from {url}")
+            return html_content, year
+
+        logger.info(f"URL not available (status: {status_code})")
+
+    logger.error("Failed to fetch WARN data from all sources")
+    return None, None
 
 
 def parse_date(date_str):
@@ -102,7 +147,10 @@ def parse_employees(emp_str):
 
 
 def scrape_ny_warn_notices():
-    """Scrape WARN notices from New York State Department of Labor.
+    """Scrape WARN notices from New York State Department of Labor archive.
+
+    Uses year-specific archive pages with fallback mechanism.
+    Returns ALL records (no date filtering) to populate dashboard with historical data.
 
     Returns:
         List of WARN notice dictionaries matching the database schema:
@@ -114,10 +162,14 @@ def scrape_ny_warn_notices():
     notices = []
 
     try:
-        logger.info(f"Fetching NY WARN data from {NY_WARN_URL}")
-        html_content = fetch_ny_warn_page()
+        # Fetch with fallback mechanism
+        html_content, year_used = fetch_ny_warn_with_fallback()
 
-        # Use pandas to extract tables from HTML with StringIO wrapper
+        if not html_content:
+            logger.warning("No WARN data available from NY DOL")
+            return notices
+
+        # Use pandas to extract tables from HTML
         tables = pd.read_html(StringIO(html_content), flavor="lxml")
 
         if not tables:
@@ -128,59 +180,64 @@ def scrape_ny_warn_notices():
         df = tables[0]
         logger.info(f"Found table with {len(df)} rows and columns: {list(df.columns)}")
 
-        # NY DOL specific column mapping
-        # Columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+        # Column mapping for year-specific archive pages
+        # Common columns: 'Company', 'Date Posted'/'Notice Date', 'Number Affected'/'Workforce Affected', 'Reason'
         column_mapping = {}
         for col in df.columns:
             col_lower = str(col).lower()
-            if "company" in col_lower or "employer" in col_lower:
+            if "company" in col_lower or "employer" in col_lower or "name" in col_lower:
                 column_mapping[col] = "Company"
-            elif "date posted" in col_lower or "posted" in col_lower:
-                # Use "Date Posted" as the primary date
+            elif "date" in col_lower and ("posted" in col_lower or "notice" in col_lower):
                 column_mapping[col] = "Date"
-            elif "employee" in col_lower or "worker" in col_lower or "affected" in col_lower:
+            elif "date" in col_lower and "Date" not in column_mapping.values():
+                # Fallback: any date column
+                column_mapping[col] = "Date"
+            elif "affected" in col_lower or "employee" in col_lower or "worker" in col_lower or "number" in col_lower:
                 column_mapping[col] = "Employees"
-            elif "region" in col_lower:
-                column_mapping[col] = "Region"
+            elif "reason" in col_lower or "type" in col_lower:
+                column_mapping[col] = "Reason"
 
         df = df.rename(columns=column_mapping)
         logger.info(f"Mapped columns: {column_mapping}")
 
         # Ensure required columns exist
-        if "Company" not in df.columns:
+        if "Company" not in df.columns and len(df.columns) > 0:
             df = df.rename(columns={df.columns[0]: "Company"})
 
         if "Date" not in df.columns:
-            # Fallback: look for any date-like column
             for col in df.columns:
                 if "date" in str(col).lower():
                     df = df.rename(columns={col: "Date"})
                     break
 
-        # Filter for last 7 days
-        cutoff_date = datetime.now() - timedelta(days=7)
-        logger.info(f"Filtering for notices after {cutoff_date.strftime('%Y-%m-%d')}")
-
-        for _, row in df.iterrows():
+        # Process ALL records (no date filtering)
+        for idx, row in df.iterrows():
             try:
-                company = str(row.get("Company", "")).strip()
+                # Use column indexing to avoid Series ambiguity
+                company = ""
+                if "Company" in df.columns:
+                    val = row["Company"]
+                    company = str(val.iloc[0] if hasattr(val, 'iloc') else val).strip()
+
                 if not company or company.lower() == "nan":
                     continue
 
-                date_filed = parse_date(row.get("Date"))
+                date_val = None
+                if "Date" in df.columns:
+                    val = row["Date"]
+                    date_val = val.iloc[0] if hasattr(val, 'iloc') else val
+
+                date_filed = parse_date(date_val)
                 if not date_filed:
-                    continue
+                    # Use a placeholder date if parsing fails
+                    date_filed = f"{year_used}-01-01"
 
-                # Check if within last 7 days
-                try:
-                    notice_date = datetime.strptime(date_filed, "%Y-%m-%d")
-                    if notice_date < cutoff_date:
-                        continue
-                except ValueError:
-                    continue
+                emp_val = 0
+                if "Employees" in df.columns:
+                    val = row["Employees"]
+                    emp_val = val.iloc[0] if hasattr(val, 'iloc') else val
 
-                # NY table may not have employee count - default to 0
-                employees = parse_employees(row.get("Employees", 0))
+                employees = parse_employees(emp_val)
 
                 notice = {
                     "company": company,
@@ -191,10 +248,10 @@ def scrape_ny_warn_notices():
                 notices.append(notice)
 
             except Exception as e:
-                logger.warning(f"Failed to parse row: {e}")
+                logger.warning(f"Failed to parse row {idx}: {e}")
                 continue
 
-        logger.info(f"Scraped {len(notices)} NY WARN notices from last 7 days")
+        logger.info(f"Scraped {len(notices)} NY WARN notices from {year_used} archive")
 
     except requests.RequestException as e:
         logger.error(f"Failed to fetch NY WARN page: {e}")
@@ -204,12 +261,6 @@ def scrape_ny_warn_notices():
         logger.error(f"Failed to parse NY WARN page: {e}")
 
     return notices
-
-
-# State WARN page URLs - for future expansion
-STATE_WARN_URLS = {
-    "NY": "https://dol.ny.gov/warn-notices",
-}
 
 
 # =============================================================================
@@ -238,13 +289,6 @@ def scrape_warn_sites():
     except Exception as e:
         # Never crash the main loop - log and continue
         logger.error(f"Error scraping NY: {e}")
-
-    # Add more states here as scrapers are implemented
-    # try:
-    #     ca_notices = scrape_ca_warn_notices()
-    #     all_notices.extend(ca_notices)
-    # except Exception as e:
-    #     logger.error(f"Error scraping CA: {e}")
 
     logger.info(f"Scraped {len(all_notices)} total WARN notices")
     return all_notices
@@ -284,7 +328,7 @@ def run_scraper():
 
 
 if __name__ == "__main__":
-    print("Running WARN Scraper (NY State)...")
+    print("Running WARN Scraper (NY State - Year Archive)...")
     count = run_scraper()
     print(f"Saved {count} WARN notices to database")
     print(f"Log file: {LOG_PATH}")

@@ -97,17 +97,21 @@ def get_layoffs_by_state():
 # =============================================================================
 
 def refresh_data():
-    """Simulate running the scraper scripts."""
+    """Run the scraper scripts to refresh data."""
     from scrapers.bdc_scraper import run_scraper as run_bdc
     from scrapers.warn_scraper import run_scraper as run_warn
+    from scrapers.legal_scraper import run_scraper as run_legal
 
-    with st.spinner("Running BDC Scraper..."):
-        bdc_count = run_bdc(use_mock=True)
+    with st.spinner("Running BDC Scraper (SEC 10-Q Analysis)..."):
+        bdc_count = run_bdc()
 
-    with st.spinner("Running WARN Scraper..."):
-        warn_count = run_warn(use_mock=True)
+    with st.spinner("Running WARN Scraper (NY State)..."):
+        warn_count = run_warn()
 
-    return bdc_count, warn_count
+    with st.spinner("Running Legal Scraper (CourtListener)..."):
+        legal_count = run_legal()
+
+    return bdc_count, warn_count, legal_count
 
 
 # =============================================================================
@@ -129,9 +133,9 @@ st.divider()
 # Refresh Button
 col_refresh, col_spacer = st.columns([1, 5])
 with col_refresh:
-    if st.button("🔄 Refresh Data", type="primary"):
-        bdc_count, warn_count = refresh_data()
-        st.success(f"Refreshed: {bdc_count} loans, {warn_count} WARN notices")
+    if st.button("Refresh Data", type="primary"):
+        bdc_count, warn_count, legal_count = refresh_data()
+        st.success(f"Refreshed: {bdc_count} BDC records, {warn_count} WARN notices, {legal_count} legal cases")
         st.rerun()
 
 # Top Row - Key Metrics
@@ -162,6 +166,45 @@ with col3:
         value=lawsuits,
         help="Legal cases tracked in the system"
     )
+
+# Credit Stress Velocity Chart (BDC Trend)
+st.markdown("---")
+st.markdown("#### Credit Stress Velocity (Ares Capital)")
+
+# Load and filter BDC data for Ares Capital
+loans_df_full = load_loans()
+ares_df = loans_df_full[loans_df_full["fund"] == "Ares Capital"].copy()
+
+if not ares_df.empty and len(ares_df) > 1:
+    # Sort by date and ensure fair_value is numeric
+    ares_df["date_added"] = pd.to_datetime(ares_df["date_added"])
+    ares_df["fair_value"] = pd.to_numeric(ares_df["fair_value"], errors="coerce")
+    ares_df = ares_df.sort_values("date_added")
+
+    # Create chart data
+    chart_data = ares_df.set_index("date_added")[["fair_value"]].rename(
+        columns={"fair_value": "Distress Score (Non-Accrual Count)"}
+    )
+
+    st.line_chart(chart_data)
+
+    # Calculate trend for annotation
+    start_value = ares_df["fair_value"].iloc[0]
+    latest_value = ares_df["fair_value"].iloc[-1]
+
+    if start_value > 0:
+        pct_change = ((latest_value - start_value) / start_value) * 100
+
+        if latest_value > start_value:
+            st.warning(f"Trend Alert: Credit stress has increased by {pct_change:.1f}% over the last {len(ares_df)} quarters.")
+        else:
+            st.success("Trend Alert: Credit stress is stable or improving.")
+    else:
+        st.info("Trend Alert: Baseline data unavailable for comparison.")
+elif not ares_df.empty:
+    st.info(f"Only {len(ares_df)} data point(s) available. Need at least 2 quarters for trend analysis.")
+else:
+    st.info("No Ares Capital trend data available. Run the BDC scraper to populate.")
 
 st.divider()
 
