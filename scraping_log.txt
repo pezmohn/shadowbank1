@@ -1,0 +1,16 @@
+2026-01-03 07:01:20,898 - INFO - Starting BDC scraper run
+2026-01-03 07:01:20,932 - INFO - Generated 5 mock loan records
+2026-01-03 07:01:20,942 - INFO - Saved loan: Apex Software Solutions LLC
+2026-01-03 07:01:20,953 - INFO - Saved loan: Midwest Healthcare Partners
+2026-01-03 07:01:20,963 - INFO - Saved loan: Continental Manufacturing Inc
+2026-01-03 07:01:20,974 - INFO - Saved loan: Summit Business Services Corp
+2026-01-03 07:01:20,984 - INFO - Saved loan: Pacific Retail Holdings LLC
+2026-01-03 07:01:20,985 - INFO - BDC scraper completed: 5/5 records saved
+2026-01-03 07:03:30,252 - INFO - Starting WARN scraper run
+2026-01-03 07:03:30,253 - INFO - Using mock WARN data
+2026-01-03 07:03:30,262 - INFO - Saved WARN: Tech Layoff Inc (CA)
+2026-01-03 07:03:30,272 - INFO - Saved WARN: Silicon Valley Dynamics (CA)
+2026-01-03 07:03:30,281 - INFO - Saved WARN: Northeast Manufacturing Co (NY)
+2026-01-03 07:03:30,291 - INFO - Saved WARN: Midwest Logistics Partners (OH)
+2026-01-03 07:03:30,301 - INFO - Saved WARN: Gulf Coast Energy Services (TX)
+2026-01-03 07:03:30,301 - INFO - WARN scraper completed: 5/5 records saved
