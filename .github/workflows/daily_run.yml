@@ -48,4 +48,8 @@ jobs:
           git add data/risk_data.db daily_report.md
           # Only commit if there are changes
           git commit -m "📈 Auto-update: Risk Data & Report [skip ci]" || exit 0
+
+          # --- THE FIX STARTS HERE ---
+          git pull --rebase origin main
           git push
+          # ---------------------------
