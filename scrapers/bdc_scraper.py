@@ -1,8 +1,9 @@
-"""BDC Scraper for SEC 10-Q filings - Trend Signal Analysis."""
+"""BDC Scraper for SEC 10-Q filings - Multi-Fund Trend Analysis."""
 
 import logging
 import re
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -23,20 +24,33 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Ares Capital Corp CIK and Ticker
-ARES_CIK = "0001287750"
-ARES_TICKER = "ARCC"
+# =============================================================================
+# BDC UNIVERSE - Top 5 BDCs by Market Cap/AUM (~$100B+ total assets)
+# =============================================================================
+
+BDC_UNIVERSE = [
+    {"ticker": "ARCC", "name": "Ares Capital"},
+    {"ticker": "OBDC", "name": "Blue Owl Capital"},
+    {"ticker": "BXSL", "name": "Blackstone Secured Lending"},
+    {"ticker": "FSK",  "name": "FS KKR Capital"},
+    {"ticker": "MAIN", "name": "Main Street Capital"},
+]
+
 DOWNLOAD_DIR = Path(__file__).parent.parent / "data" / "sec_filings"
 
-# Number of quarters to analyze for trend
+# Number of quarters to analyze for trend per BDC
 NUM_QUARTERS = 4
+
+# Rate limiting delay between SEC requests (seconds)
+SEC_RATE_LIMIT_DELAY = 3
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def download_10q_filings(limit=4):
-    """Download multiple 10-Q filings for Ares Capital Corp.
+def download_10q_filings(ticker, limit=4):
+    """Download multiple 10-Q filings for a given ticker.
 
     Args:
+        ticker: Stock ticker symbol (e.g., "ARCC").
         limit: Number of filings to download.
 
     Returns:
@@ -45,22 +59,27 @@ def download_10q_filings(limit=4):
     try:
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-        logger.info(f"Downloading last {limit} 10-Q filings for {ARES_TICKER} (CIK: {ARES_CIK})")
-        dl = Downloader("ShadowBank", "risk@shadowbank.local", DOWNLOAD_DIR)
-        dl.get("10-Q", ARES_CIK, limit=limit)
+        logger.info(f"Downloading last {limit} 10-Q filings for {ticker}")
+        dl = Downloader("ShadowBank", "risk-bot@shadowbank.com", DOWNLOAD_DIR)
+        dl.get("10-Q", ticker, limit=limit)
 
-        # Find all downloaded filings
-        ares_dir = DOWNLOAD_DIR / "sec-edgar-filings" / ARES_CIK / "10-Q"
-        if ares_dir.exists():
-            filings = sorted(ares_dir.iterdir(), key=lambda p: p.name)  # Sort by accession number (chronological)
-            logger.info(f"Found {len(filings)} 10-Q filings")
-            return filings
+        # Find all downloaded filings - search by ticker
+        filings_base = DOWNLOAD_DIR / "sec-edgar-filings"
+        if filings_base.exists():
+            # Find the CIK directory for this ticker
+            for cik_dir in filings_base.iterdir():
+                tenq_dir = cik_dir / "10-Q"
+                if tenq_dir.exists():
+                    filings = sorted(tenq_dir.iterdir(), key=lambda p: p.name)
+                    if filings:
+                        logger.info(f"Found {len(filings)} 10-Q filings for {ticker}")
+                        return filings[-limit:]  # Return most recent 'limit' filings
 
-        logger.warning("No 10-Q filings found after download")
+        logger.warning(f"No 10-Q filings found for {ticker}")
         return []
 
     except Exception as e:
-        logger.error(f"Failed to download 10-Q filings: {e}")
+        logger.error(f"Failed to download 10-Q filings for {ticker}: {e}")
         return []
 
 
@@ -74,11 +93,10 @@ def extract_filing_date(filing_path):
         Filing date as string (YYYY-MM-DD) or None if not found.
     """
     try:
-        # The accession number contains the date: 0001287750-YY-NNNNNN
-        # Try to extract from directory name first
         dir_name = filing_path.name
-        # Format: 0001287750-25-000046 -> extract year
         parts = dir_name.split("-")
+        year = None
+
         if len(parts) >= 2:
             year_part = parts[1]
             if len(year_part) == 2:
@@ -100,7 +118,6 @@ def extract_filing_date(filing_path):
             with open(main_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
-            # Look for FILED AS OF DATE or CONFORMED PERIOD OF REPORT
             date_patterns = [
                 r"FILED AS OF DATE:\s*(\d{8})",
                 r"CONFORMED PERIOD OF REPORT:\s*(\d{8})",
@@ -111,13 +128,10 @@ def extract_filing_date(filing_path):
                 match = re.search(pattern, content)
                 if match:
                     date_str = match.group(1)
-                    # Format: YYYYMMDD
                     return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}"
 
-        # Fallback: use accession number to estimate quarter
-        # This is approximate but better than nothing
-        if 'year' in dir():
-            # Estimate quarter from accession sequence
+        # Fallback: use year from accession number
+        if year:
             seq = int(parts[2]) if len(parts) >= 3 else 1
             if seq < 20:
                 quarter_month = "03"
@@ -154,10 +168,8 @@ def count_distress_keywords(filing_path):
     }
 
     try:
-        # Extract filing date
         counts["filing_date"] = extract_filing_date(filing_path)
 
-        # Find the primary document
         html_files = list(filing_path.glob("*.htm")) + list(filing_path.glob("*.html"))
         txt_files = list(filing_path.glob("*.txt"))
 
@@ -171,28 +183,19 @@ def count_distress_keywords(filing_path):
 
         logger.info(f"Parsing filing: {filing_path.name} ({main_file.stat().st_size / 1024 / 1024:.1f} MB)")
 
-        # Read and parse the filing
         with open(main_file, "r", encoding="utf-8", errors="ignore") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
 
-        # Get all text content
         text = soup.get_text().lower()
 
         # Count non-accrual variations
-        non_accrual_patterns = [
-            r"non-accrual",
-            r"nonaccrual",
-            r"non\s+accrual",
-        ]
+        non_accrual_patterns = [r"non-accrual", r"nonaccrual", r"non\s+accrual"]
         for pattern in non_accrual_patterns:
             matches = re.findall(pattern, text)
             counts["non_accrual_count"] += len(matches)
 
         # Count payment default variations
-        payment_default_patterns = [
-            r"payment\s+default",
-            r"payment-default",
-        ]
+        payment_default_patterns = [r"payment\s+default", r"payment-default"]
         for pattern in payment_default_patterns:
             matches = re.findall(pattern, text)
             counts["payment_default_count"] += len(matches)
@@ -216,40 +219,33 @@ def determine_trend_signal(quarterly_data):
         quarterly_data: List of dicts with non_accrual_count, sorted chronologically.
 
     Returns:
-        Tuple of (signal_str, trend_description).
+        Tuple of (signal_str, color_indicator).
     """
     if len(quarterly_data) < 2:
-        return "INSUFFICIENT_DATA", "Not enough quarters to determine trend"
+        return "INSUFFICIENT_DATA", "[?]"
 
     counts = [q["non_accrual_count"] for q in quarterly_data]
 
-    # Calculate trend
     first_half_avg = sum(counts[:len(counts)//2]) / max(1, len(counts)//2)
     second_half_avg = sum(counts[len(counts)//2:]) / max(1, len(counts) - len(counts)//2)
 
-    # Also check latest vs earliest
     change = counts[-1] - counts[0]
-    pct_change = (change / max(1, counts[0])) * 100 if counts[0] > 0 else 0
 
     if second_half_avg > first_half_avg * 1.1 or change > 10:
-        signal = "DETERIORATING"
-        color = "[!]"
+        return "DETERIORATING", "[!]"
     elif second_half_avg < first_half_avg * 0.9 or change < -10:
-        signal = "IMPROVING"
-        color = "[+]"
+        return "IMPROVING", "[+]"
     else:
-        signal = "STABLE"
-        color = "[=]"
-
-    return signal, color
+        return "STABLE", "[=]"
 
 
-def create_risk_record(filing_data, quarter_label):
+def create_risk_record(filing_data, quarter_label, fund_name):
     """Create a risk record from filing analysis.
 
     Args:
         filing_data: Dictionary with keyword counts and filing date.
         quarter_label: Label for this quarter (e.g., "Q1 2024").
+        fund_name: Name of the BDC fund.
 
     Returns:
         Dictionary matching the database schema for bdc_loans.
@@ -257,8 +253,8 @@ def create_risk_record(filing_data, quarter_label):
     filing_date = filing_data.get("filing_date") or datetime.now().strftime("%Y-%m-%d")
 
     return {
-        "borrower": f"Ares Portfolio ({quarter_label})",
-        "fund": "Ares Capital",
+        "borrower": f"{fund_name} Portfolio ({quarter_label})",
+        "fund": fund_name,
         "sector": "Diversified",
         "cost": 0,
         "fair_value": filing_data["non_accrual_count"],
@@ -266,27 +262,31 @@ def create_risk_record(filing_data, quarter_label):
     }
 
 
-def run_scraper():
-    """Run the BDC scraper pipeline with trend analysis.
+def process_single_bdc(bdc, bdc_index, total_bdcs):
+    """Process a single BDC - download filings and analyze.
 
-    Downloads the last 4 10-Q filings for Ares Capital Corp,
-    analyzes distress trends, and saves records to the database.
+    Args:
+        bdc: Dictionary with ticker and name.
+        bdc_index: Current index (1-based) for progress display.
+        total_bdcs: Total number of BDCs being processed.
 
     Returns:
-        Number of records saved.
+        Tuple of (records_saved, quarterly_data, trend_str, signal).
     """
+    ticker = bdc["ticker"]
+    name = bdc["name"]
+
+    print(f"\nProcessing {bdc_index}/{total_bdcs}: {name} ({ticker})...", end=" ", flush=True)
+    logger.info(f"Processing BDC {bdc_index}/{total_bdcs}: {name} ({ticker})")
+
     try:
-        logger.info("Starting BDC scraper run (Trend Analysis)")
-
-        # Initialize database
-        init_db()
-
-        # Download last 4 10-Q filings
-        filing_paths = download_10q_filings(limit=NUM_QUARTERS)
+        # Download filings
+        filing_paths = download_10q_filings(ticker, limit=NUM_QUARTERS)
 
         if not filing_paths:
-            logger.error("Failed to download any 10-Q filings")
-            return 0
+            print("No filings found.")
+            logger.warning(f"No filings found for {ticker}")
+            return 0, [], "N/A", "NO_DATA"
 
         # Analyze each filing
         quarterly_data = []
@@ -300,14 +300,11 @@ def run_scraper():
         # Determine trend signal
         signal, color = determine_trend_signal(quarterly_data)
 
-        # Build trend string for output
+        # Build trend string
         trend_parts = []
         for i, q in enumerate(quarterly_data):
-            quarter_num = i + 1
             count = q["non_accrual_count"]
-            date = q.get("filing_date", "Unknown")
-            trend_parts.append(f"Q{quarter_num}({count})")
-
+            trend_parts.append(f"Q{i+1}({count})")
         trend_str = " -> ".join(trend_parts)
 
         # Save records to database
@@ -315,7 +312,6 @@ def run_scraper():
         for i, data in enumerate(quarterly_data):
             quarter_label = f"Q{i+1}"
             if data.get("filing_date"):
-                # Extract year and quarter from date
                 try:
                     dt = datetime.strptime(data["filing_date"], "%Y-%m-%d")
                     q_num = (dt.month - 1) // 3 + 1
@@ -323,37 +319,85 @@ def run_scraper():
                 except:
                     pass
 
-            record = create_risk_record(data, quarter_label)
+            record = create_risk_record(data, quarter_label, name)
 
             try:
                 save_loan(record)
                 saved_count += 1
-                logger.info(f"Saved: {record['borrower']} - Risk Score: {record['fair_value']}")
             except Exception as e:
-                logger.error(f"Failed to save record: {e}")
+                logger.error(f"Failed to save record for {name}: {e}")
 
-        # Log summary
-        logger.info(f"Trend Analysis: {trend_str}. Signal: {signal}")
-        logger.info(f"BDC scraper completed: {saved_count}/{len(quarterly_data)} records saved")
+        print(f"Done. {color} {signal}")
+        logger.info(f"{name}: {trend_str} - Signal: {signal} - Saved: {saved_count} records")
 
-        # Print summary to console
-        print(f"\n{'='*60}")
-        print(f"ARES CAPITAL DISTRESS TREND ANALYSIS")
-        print(f"{'='*60}")
-        print(f"Trend: {trend_str}")
-        print(f"Signal: {color} {signal}")
-        print(f"{'='*60}")
-        print(f"Records saved: {saved_count}")
+        return saved_count, quarterly_data, trend_str, signal
 
-        return saved_count
+    except Exception as e:
+        print(f"ERROR: {e}")
+        logger.error(f"Failed to process {ticker}: {e}")
+        return 0, [], "ERROR", "FAILED"
+
+
+def run_scraper():
+    """Run the BDC scraper pipeline for all BDCs in the universe.
+
+    Downloads the last 4 10-Q filings for each BDC,
+    analyzes distress trends, and saves records to the database.
+
+    Returns:
+        Total number of records saved.
+    """
+    try:
+        logger.info("Starting BDC scraper run (Multi-Fund Trend Analysis)")
+        print("\n" + "="*60)
+        print("BDC UNIVERSE DISTRESS TREND ANALYSIS")
+        print("="*60)
+        print(f"Analyzing {len(BDC_UNIVERSE)} BDCs: {', '.join(b['ticker'] for b in BDC_UNIVERSE)}")
+
+        # Initialize database
+        init_db()
+
+        total_saved = 0
+        results = []
+
+        for i, bdc in enumerate(BDC_UNIVERSE, 1):
+            saved, quarterly_data, trend_str, signal = process_single_bdc(bdc, i, len(BDC_UNIVERSE))
+            total_saved += saved
+            results.append({
+                "name": bdc["name"],
+                "ticker": bdc["ticker"],
+                "trend": trend_str,
+                "signal": signal,
+                "records": saved
+            })
+
+            # Rate limiting - be polite to SEC servers
+            if i < len(BDC_UNIVERSE):
+                print(f"   (Rate limit: waiting {SEC_RATE_LIMIT_DELAY}s before next request...)")
+                time.sleep(SEC_RATE_LIMIT_DELAY)
+
+        # Print summary
+        print("\n" + "="*60)
+        print("SUMMARY")
+        print("="*60)
+        for r in results:
+            status = "[!]" if r["signal"] == "DETERIORATING" else "[+]" if r["signal"] == "IMPROVING" else "[=]"
+            print(f"{r['ticker']:6} | {r['name']:30} | {status} {r['signal']:15} | {r['records']} records")
+        print("="*60)
+        print(f"Total records saved: {total_saved}")
+
+        logger.info(f"BDC scraper completed: {total_saved} total records saved across {len(BDC_UNIVERSE)} BDCs")
+
+        return total_saved
 
     except Exception as e:
         logger.error(f"BDC scraper failed: {e}")
+        print(f"\nERROR: {e}")
         return 0
 
 
 if __name__ == "__main__":
-    print("Running BDC Scraper (Ares Capital 10-Q Trend Analysis)...")
+    print("Running BDC Scraper (Top 5 BDC Universe)...")
     count = run_scraper()
     if count > 0:
         print(f"\nSuccessfully saved {count} quarterly risk records to database")
