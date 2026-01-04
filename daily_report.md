@@ -1,64 +1,26 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — January 03, 2026
+## Daily Risk Report — January 04, 2026
 
 ---
 
 ## 📊 Executive Summary
 
-- **Distressed Loans Tracked:** 4
-- **Total Impairment:** $1.8M
-- **Layoff Notices:** 5 companies (940 employees)
+- **Distressed Loans Tracked:** 0
+- **Total Impairment:** $0
+- **Layoff Notices:** 0 companies (0 employees)
 - **New Legal Cases:** 0
 
 ---
 
 ## 📉 BDC Portfolio Alerts
 
-### Technology
-
-- 🔴 **Apex Software Solutions LLC** (Ares)
-  - Cost: $15.5M → Fair Value: $15.2M (-1.9%)
-
-### Healthcare
-
-- 🔴 **Midwest Healthcare Partners** (Ares)
-  - Cost: $22.0M → Fair Value: $21.8M (-1.1%)
-
-### Industrials
-
-- 🔴 **Continental Manufacturing Inc** (Ares)
-  - Cost: $8.8M → Fair Value: $8.4M (-4.0%)
-
-### Business Services
-
-- 🟢 **Summit Business Services Corp** (Ares)
-  - Cost: $12.3M → Fair Value: $12.3M (+0.0%)
-
-### Consumer Retail
-
-- 🔴 **Pacific Retail Holdings LLC** (Ares)
-  - Cost: $6.8M → Fair Value: $6.0M (-12.5%)
+*No new loan data recorded today.*
 
 ---
 
 ## 🚨 WARN Act Layoff Notices
 
-### CA (470 employees)
-
-- ⚠️ **Tech Layoff Inc** — 150 employees
-- ⚠️ **Silicon Valley Dynamics** — 320 employees
-
-### OH (210 employees)
-
-- ⚠️ **Midwest Logistics Partners** — 210 employees
-
-### TX (175 employees)
-
-- ⚠️ **Gulf Coast Energy Services** — 175 employees
-
-### NY (85 employees)
-
-- ⚠️ **Northeast Manufacturing Co** — 85 employees
+*No WARN notices filed today.*
 
 ---
 
