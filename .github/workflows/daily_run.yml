@@ -43,14 +43,19 @@ jobs:
 
       - name: Commit and Push Database Changes
         run: |
-          rm -rf data/sec_filings/sec-edgar-filings
+          # Clean up temp files from scrapers
+          rm -rf data/sec_filings
+
           git config --global user.name "RiskBot"
           git config --global user.email "bot@noreply.github.com"
           git add data/risk_data.db daily_report.md
+
           # Only commit if there are changes
           git commit -m "📈 Auto-update: Risk Data & Report [skip ci]" || exit 0
 
-          # --- THE FIX STARTS HERE ---
+          # Discard any remaining unstaged changes before rebase
+          git checkout .
+          git clean -fd
+
           git pull --rebase origin main
           git push
-          # ---------------------------
