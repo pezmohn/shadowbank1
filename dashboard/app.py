@@ -1,5 +1,6 @@
 """Shadow Bank Risk Observatory - Streamlit Dashboard."""
 
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -11,6 +12,96 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 DB_PATH = Path(__file__).parent.parent / "data" / "risk_data.db"
+
+
+# =============================================================================
+# NAME NORMALIZATION FOR CROSS-REFERENCE MATCHING
+# =============================================================================
+
+def normalize_name(name):
+    """Normalize company name for fuzzy matching.
+
+    Args:
+        name: Company name string.
+
+    Returns:
+        Normalized name (lowercase, no punctuation, no common suffixes).
+    """
+    if not name or pd.isna(name):
+        return ""
+
+    # Convert to lowercase
+    name = str(name).lower().strip()
+
+    # Remove punctuation
+    name = re.sub(r'[^\w\s]', '', name)
+
+    # Remove common corporate suffixes
+    suffixes = [
+        ' incorporated', ' inc', ' llc', ' llp', ' corp', ' corporation',
+        ' company', ' co', ' ltd', ' limited', ' lp', ' partners',
+        ' holdings', ' group', ' services', ' solutions'
+    ]
+    for suffix in suffixes:
+        if name.endswith(suffix):
+            name = name[:-len(suffix)]
+
+    # Strip extra whitespace
+    name = ' '.join(name.split())
+
+    return name
+
+
+def find_cross_reference_alerts(warn_df, legal_df):
+    """Find companies that appear in both WARN and Legal data.
+
+    Args:
+        warn_df: DataFrame with WARN notices (must have 'company' column).
+        legal_df: DataFrame with legal cases (must have 'defendant' column).
+
+    Returns:
+        DataFrame with matched companies and their dates.
+    """
+    if warn_df.empty or legal_df.empty:
+        return pd.DataFrame()
+
+    # Create normalized name columns
+    warn_df = warn_df.copy()
+    legal_df = legal_df.copy()
+
+    warn_df['normalized_name'] = warn_df['company'].apply(normalize_name)
+    legal_df['normalized_name'] = legal_df['defendant'].apply(normalize_name)
+
+    # Find intersection of normalized names
+    warn_names = set(warn_df['normalized_name'].unique())
+    legal_names = set(legal_df['normalized_name'].unique())
+
+    # Remove empty strings
+    warn_names.discard('')
+    legal_names.discard('')
+
+    matched_names = warn_names.intersection(legal_names)
+
+    if not matched_names:
+        return pd.DataFrame()
+
+    # Build results table
+    results = []
+    for norm_name in matched_names:
+        # Get WARN data for this company
+        warn_match = warn_df[warn_df['normalized_name'] == norm_name].iloc[0]
+
+        # Get Legal data for this company
+        legal_match = legal_df[legal_df['normalized_name'] == norm_name].iloc[0]
+
+        results.append({
+            'Company': warn_match['company'],
+            'Layoff Date': warn_match.get('date_filed', 'N/A'),
+            'Lawsuit Date': legal_match.get('date_filed', 'N/A'),
+            'Risk Context': f"Layoffs + {legal_match.get('case_type', 'Legal Action')}"
+        })
+
+    return pd.DataFrame(results)
 
 
 # =============================================================================
@@ -127,6 +218,25 @@ st.set_page_config(
 # Header
 st.title("Shadow Bank Risk Observatory")
 st.markdown("*Financial Risk Monitoring Dashboard*")
+
+# =============================================================================
+# CRITICAL ALERTS - Cross-Reference Hits (at the very top)
+# =============================================================================
+
+# Load data for cross-reference check
+warn_data = load_warn_notices()
+legal_data = load_legal_cases()
+
+# Find cross-reference matches
+cross_ref_matches = find_cross_reference_alerts(warn_data, legal_data)
+
+if not cross_ref_matches.empty:
+    st.error("### CRITICAL ALERTS (Cross-Reference Hits)")
+    st.markdown("**Companies appearing in BOTH layoff data AND lawsuit filings:**")
+    st.dataframe(cross_ref_matches, hide_index=True, use_container_width=True)
+    st.caption(f"Found {len(cross_ref_matches)} company/companies with dual distress signals")
+else:
+    st.success("No cross-referenced distress signals detected.")
 
 st.divider()
 
