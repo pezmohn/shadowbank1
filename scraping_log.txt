@@ -14,3 +14,326 @@
 2026-01-03 07:03:30,291 - INFO - Saved WARN: Midwest Logistics Partners (OH)
 2026-01-03 07:03:30,301 - INFO - Saved WARN: Gulf Coast Energy Services (TX)
 2026-01-03 07:03:30,301 - INFO - WARN scraper completed: 5/5 records saved
+2026-01-03 11:46:56,397 - INFO - Starting WARN scraper run
+2026-01-03 11:46:56,398 - INFO - Fetching NY WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 11:46:57,251 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 11:46:57,252 - INFO - Mapped columns: {'Company Name': 'Company', 'Notice Dated': 'Date'}
+2026-01-03 11:46:57,258 - INFO - Scraped 0 NY WARN notices from last 7 days
+2026-01-03 11:46:57,258 - INFO - Scraped 0 total WARN notices
+2026-01-03 11:46:57,259 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 11:49:25,618 - INFO - Starting WARN scraper run
+2026-01-03 11:49:25,619 - INFO - Fetching NY WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 11:49:26,027 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 11:49:26,027 - INFO - Mapped columns: {'Company Name': 'Company', 'Region': 'Region', 'Date Posted': 'Date'}
+2026-01-03 11:49:26,027 - INFO - Filtering for notices after 2025-12-27
+2026-01-03 11:49:26,032 - INFO - Scraped 0 NY WARN notices from last 7 days
+2026-01-03 11:49:26,032 - INFO - Scraped 0 total WARN notices
+2026-01-03 11:49:26,032 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 11:55:19,655 - INFO - Starting BDC scraper run
+2026-01-03 11:55:19,657 - INFO - Downloading latest 10-Q for ARCC (CIK: 0001287750)
+2026-01-03 11:55:21,719 - INFO - Downloaded 10-Q filing to C:\Users\leo\Development\shadowbank\data\sec_filings\sec-edgar-filings\0001287750\10-Q\0001287750-25-000046
+2026-01-03 11:55:21,720 - WARNING - No HTML files found in filing
+2026-01-03 11:55:21,729 - INFO - Saved risk record: Ares Portfolio Aggregate (non-accrual count: 0)
+2026-01-03 11:58:39,162 - INFO - Starting BDC scraper run
+2026-01-03 11:58:39,164 - INFO - Downloading latest 10-Q for ARCC (CIK: 0001287750)
+2026-01-03 11:58:40,285 - INFO - Downloaded 10-Q filing to C:\Users\leo\Development\shadowbank\data\sec_filings\sec-edgar-filings\0001287750\10-Q\0001287750-25-000046
+2026-01-03 11:58:40,286 - INFO - Parsing filing: full-submission.txt (61.4 MB)
+2026-01-03 11:59:36,286 - INFO - Distress keyword counts: non-accrual=88, payment-default=0, total=88
+2026-01-03 11:59:36,297 - INFO - Saved risk record: Ares Portfolio Aggregate (non-accrual count: 88)
+2026-01-03 12:09:13,606 - INFO - Starting Legal scraper run
+2026-01-03 12:09:13,607 - INFO - Fetching RSS feed from https://www.deb.uscourts.gov/rss.xml
+2026-01-03 12:09:14,667 - INFO - Successfully fetched feed from https://www.deb.uscourts.gov/rss.xml
+2026-01-03 12:09:14,667 - INFO - Processing 9 feed entries
+2026-01-03 12:09:14,667 - INFO - Found 0 relevant cases from last 24 hours
+2026-01-03 12:09:14,667 - INFO - Legal scraper completed: 0/0 records saved
+2026-01-03 12:15:03,963 - INFO - Starting Legal scraper run (CourtListener)
+2026-01-03 12:15:03,964 - INFO - Fetching RSS feed from https://www.courtlistener.com/feed/search/?q=chapter+11&type=r&order_by=dateFiled+desc
+2026-01-03 12:15:05,334 - INFO - Processing 20 CourtListener entries
+2026-01-03 12:15:05,334 - INFO - Found 20 Chapter 11 cases from last 24 hours
+2026-01-03 12:15:05,344 - INFO - Saved case: Technical Arts Group LLC (Chapter 11)
+2026-01-03 12:15:05,355 - INFO - Saved case: Mikhi Dee Maxwell (Chapter 11)
+2026-01-03 12:15:05,365 - INFO - Saved case: 5410 30th Street DC LLC (Chapter 11)
+2026-01-03 12:15:05,375 - INFO - Saved case: Michael Moureau Wilson (Chapter 11)
+2026-01-03 12:15:05,385 - INFO - Saved case: Michael Melendez and Phyllis Melendez (Chapter 11)
+2026-01-03 12:15:05,395 - INFO - Saved case: Michael Melendez and Phyllis Melendez (Chapter 11)
+2026-01-03 12:15:05,405 - INFO - Saved case: Takesha Evette Clark (Chapter 11)
+2026-01-03 12:15:05,416 - INFO - Saved case: Latimore (Chapter 11)
+2026-01-03 12:15:05,426 - INFO - Saved case: Raymond Austin Shelley (Chapter 11)
+2026-01-03 12:15:05,437 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:15:05,447 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:15:05,458 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:15:05,469 - INFO - Saved case: Kelvin F Slater and Amanda F Slater (Chapter 11)
+2026-01-03 12:15:05,479 - INFO - Saved case: Kenneth D. Church and Iris A. Church (Chapter 11)
+2026-01-03 12:15:05,490 - INFO - Saved case: Blue Sun Scientific, LLC and The Innovative Technologies Group & Co., LTD (Chapter 11)
+2026-01-03 12:15:05,500 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:15:05,511 - INFO - Saved case: Stella Acosta (Chapter 11)
+2026-01-03 12:15:05,521 - INFO - Saved case: Motormax Financial Services Corp. (Chapter 11)
+2026-01-03 12:15:05,531 - INFO - Saved case: Platinum Beauty Bar and Spa, LLC (Chapter 11)
+2026-01-03 12:15:05,541 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:15:05,541 - INFO - Legal scraper completed: 20/20 records saved
+2026-01-03 12:19:59,113 - INFO - Starting WARN scraper run
+2026-01-03 12:19:59,114 - INFO - Fetching NY WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 12:19:59,990 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 12:19:59,991 - INFO - Mapped columns: {'Company Name': 'Company', 'Region': 'Region', 'Date Posted': 'Date'}
+2026-01-03 12:19:59,991 - INFO - Filtering for notices after 2025-12-27
+2026-01-03 12:19:59,995 - INFO - Scraped 0 NY WARN notices from last 7 days
+2026-01-03 12:19:59,995 - INFO - Scraped 0 total WARN notices
+2026-01-03 12:19:59,995 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 12:21:04,398 - INFO - Starting BDC scraper run
+2026-01-03 12:21:04,399 - INFO - Downloading latest 10-Q for ARCC (CIK: 0001287750)
+2026-01-03 12:21:05,429 - INFO - Downloaded 10-Q filing to C:\Users\leo\Development\shadowbank\data\sec_filings\sec-edgar-filings\0001287750\10-Q\0001287750-25-000046
+2026-01-03 12:21:05,430 - INFO - Parsing filing: full-submission.txt (61.4 MB)
+2026-01-03 12:21:52,008 - INFO - Distress keyword counts: non-accrual=88, payment-default=0, total=88
+2026-01-03 12:21:52,023 - INFO - Saved risk record: Ares Portfolio Aggregate (non-accrual count: 88)
+2026-01-03 12:27:42,225 - INFO - Starting Legal scraper run (CourtListener)
+2026-01-03 12:27:42,227 - INFO - Fetching RSS feed from https://www.courtlistener.com/feed/search/?q=chapter+11&type=r&order_by=dateFiled+desc
+2026-01-03 12:27:43,575 - INFO - Processing 20 CourtListener entries
+2026-01-03 12:27:43,576 - INFO - Found 20 Chapter 11 cases from last 24 hours
+2026-01-03 12:27:43,586 - INFO - Saved case: Technical Arts Group LLC (Chapter 11)
+2026-01-03 12:27:43,596 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:27:43,606 - INFO - Saved case: Mikhi Dee Maxwell (Chapter 11)
+2026-01-03 12:27:43,616 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:27:43,625 - INFO - Saved case: 5410 30th Street DC LLC (Chapter 11)
+2026-01-03 12:27:43,635 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:27:43,646 - INFO - Saved case: Michael Moureau Wilson (Chapter 11)
+2026-01-03 12:27:43,656 - INFO - Saved case: Michael Melendez and Phyllis Melendez (Chapter 11)
+2026-01-03 12:27:43,667 - INFO - Saved case: Michael Melendez and Phyllis Melendez (Chapter 11)
+2026-01-03 12:27:43,678 - INFO - Saved case: Takesha Evette Clark (Chapter 11)
+2026-01-03 12:27:43,688 - INFO - Saved case: Latimore (Chapter 11)
+2026-01-03 12:27:43,701 - INFO - Saved case: Raymond Austin Shelley (Chapter 11)
+2026-01-03 12:27:43,714 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:27:43,724 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:27:43,733 - INFO - Saved case: SpiriTrust Lutheran (Chapter 11)
+2026-01-03 12:27:43,743 - INFO - Saved case: Kelvin F Slater and Amanda F Slater (Chapter 11)
+2026-01-03 12:27:43,753 - INFO - Saved case: Kenneth D. Church and Iris A. Church (Chapter 11)
+2026-01-03 12:27:43,763 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:27:43,773 - INFO - Saved case: Blue Sun Scientific, LLC and The Innovative Technologies Group & Co., LTD (Chapter 11)
+2026-01-03 12:27:43,783 - INFO - Saved case: Carvajal-Barrios (Chapter 11)
+2026-01-03 12:27:43,783 - INFO - Legal scraper completed: 20/20 records saved
+2026-01-03 12:27:48,518 - INFO - Starting WARN scraper run
+2026-01-03 12:27:48,520 - INFO - Fetching NY WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 12:27:49,481 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 12:27:49,481 - INFO - Mapped columns: {'Company Name': 'Company', 'Region': 'Region', 'Date Posted': 'Date'}
+2026-01-03 12:27:49,481 - INFO - Filtering for notices after 2025-12-27
+2026-01-03 12:27:49,485 - INFO - Scraped 0 NY WARN notices from last 7 days
+2026-01-03 12:27:49,485 - INFO - Scraped 0 total WARN notices
+2026-01-03 12:27:49,486 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 12:28:38,434 - INFO - Starting BDC scraper run
+2026-01-03 12:28:38,435 - INFO - Downloading latest 10-Q for ARCC (CIK: 0001287750)
+2026-01-03 12:28:39,612 - INFO - Downloaded 10-Q filing to C:\Users\leo\Development\shadowbank\data\sec_filings\sec-edgar-filings\0001287750\10-Q\0001287750-25-000046
+2026-01-03 12:28:39,613 - INFO - Parsing filing: full-submission.txt (61.4 MB)
+2026-01-03 12:29:27,874 - INFO - Distress keyword counts: non-accrual=88, payment-default=0, total=88
+2026-01-03 12:29:27,885 - INFO - Saved risk record: Ares Portfolio Aggregate (non-accrual count: 88)
+2026-01-03 12:35:44,871 - INFO - Starting WARN scraper run
+2026-01-03 12:35:44,872 - INFO - Fetching NY WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 12:35:45,587 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 12:35:45,588 - INFO - Mapped columns: {'Company Name': 'Company', 'Region': 'Region', 'Date Posted': 'Date'}
+2026-01-03 12:35:45,588 - INFO - Filtering for notices after 2025-12-04
+2026-01-03 12:35:45,592 - INFO - Scraped 0 NY WARN notices from last 30 days
+2026-01-03 12:35:45,592 - INFO - Scraped 0 total WARN notices
+2026-01-03 12:35:45,592 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 12:58:46,393 - INFO - Starting WARN scraper run
+2026-01-03 12:58:46,394 - INFO - Trying current year URL: https://dol.ny.gov/2026-warn-notices
+2026-01-03 12:58:47,149 - INFO - Current year (2026) not available (status: 404), trying previous year
+2026-01-03 12:58:47,149 - INFO - Trying fallback URL: https://dol.ny.gov/2025-warn-notices
+2026-01-03 12:58:47,821 - ERROR - Failed to fetch WARN data for both 2026 and 2025
+2026-01-03 12:58:47,822 - WARNING - No WARN data available from NY DOL
+2026-01-03 12:58:47,822 - INFO - Scraped 0 total WARN notices
+2026-01-03 12:58:47,822 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 12:59:52,760 - INFO - Starting WARN scraper run
+2026-01-03 12:59:52,761 - INFO - Trying URL: https://dol.ny.gov/2026-warn-notices
+2026-01-03 12:59:53,246 - INFO - URL not available (status: 404)
+2026-01-03 12:59:53,246 - INFO - Trying URL: https://dol.ny.gov/2025-warn-notices
+2026-01-03 12:59:53,584 - INFO - URL not available (status: 404)
+2026-01-03 12:59:53,584 - INFO - Trying URL: https://dol.ny.gov/warn-notices
+2026-01-03 12:59:54,277 - INFO - Successfully fetched WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 12:59:54,293 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 12:59:54,293 - INFO - Mapped columns: {'Company Name': 'Company', 'Date Posted': 'Date', 'Notice Dated': 'Date'}
+2026-01-03 12:59:54,293 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,294 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,294 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,294 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,294 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,294 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,295 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,296 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,297 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,297 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,297 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,297 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,297 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,298 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,299 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,300 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,301 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,302 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,302 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,302 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,302 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,302 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,303 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,304 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - WARNING - Failed to parse row: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+2026-01-03 12:59:54,305 - INFO - Scraped 0 NY WARN notices from 2026 archive
+2026-01-03 12:59:54,305 - INFO - Scraped 0 total WARN notices
+2026-01-03 12:59:54,305 - INFO - WARN scraper completed: 0/0 records saved
+2026-01-03 13:00:43,509 - INFO - Starting WARN scraper run
+2026-01-03 13:00:43,510 - INFO - Trying URL: https://dol.ny.gov/2026-warn-notices
+2026-01-03 13:00:43,874 - INFO - URL not available (status: 404)
+2026-01-03 13:00:43,874 - INFO - Trying URL: https://dol.ny.gov/2025-warn-notices
+2026-01-03 13:00:44,205 - INFO - URL not available (status: 404)
+2026-01-03 13:00:44,205 - INFO - Trying URL: https://dol.ny.gov/warn-notices
+2026-01-03 13:00:44,716 - INFO - Successfully fetched WARN data from https://dol.ny.gov/warn-notices
+2026-01-03 13:00:44,731 - INFO - Found table with 69 rows and columns: ['Company Name', 'Region', 'Date Posted', 'Notice Dated']
+2026-01-03 13:00:44,731 - INFO - Mapped columns: {'Company Name': 'Company', 'Date Posted': 'Date', 'Notice Dated': 'Date'}
+2026-01-03 13:00:44,741 - INFO - Scraped 69 NY WARN notices from 2026 archive
+2026-01-03 13:00:44,742 - INFO - Scraped 69 total WARN notices
+2026-01-03 13:00:44,753 - INFO - Saved WARN: Plug Power, Inc. (NY)
+2026-01-03 13:00:44,765 - INFO - Saved WARN: Bedabox LLC d/b/a ShipMonk (NY)
+2026-01-03 13:00:44,775 - INFO - Saved WARN: Interstate Hotels, LLC. dba The Roosevelt Hotel (NY)
+2026-01-03 13:00:44,786 - INFO - Saved WARN: CYH Manhattan, LLC. dba The Stewart Hotel (NY)
+2026-01-03 13:00:44,796 - INFO - Saved WARN: Nogin Commerce, LLC. (NY)
+2026-01-03 13:00:44,807 - INFO - Saved WARN: International AIDS Vaccine Initiative (NY)
+2026-01-03 13:00:44,817 - INFO - Saved WARN: Mental Health Association of New York City, Inc. d/b/a Vibrant Emotional Health (NY)
+2026-01-03 13:00:44,829 - INFO - Saved WARN: Sumitomo Rubber USA, LLC (NY)
+2026-01-03 13:00:44,839 - INFO - Saved WARN: Amscan Inc., a Party City Holdings, Inc. (NY)
+2026-01-03 13:00:44,850 - INFO - Saved WARN: Rapid Reliable Care by DocGo, LLC dba Rapid Reliable Care; DocGo (NY)
+2026-01-03 13:00:44,860 - INFO - Saved WARN: F21 OpCO, LLC. dba Forever 21 (NY)
+2026-01-03 13:00:44,872 - INFO - Saved WARN: NEP Group, Inc. (NY)
+2026-01-03 13:00:44,882 - INFO - Saved WARN: TL Cannon Management Corp. dba Applebee's (NY)
+2026-01-03 13:00:44,894 - INFO - Saved WARN: Cold Spring Acquisition, LLC d/b/a Cold Spring Hills Center for Nursing and Rehabilitation (NY)
+2026-01-03 13:00:44,905 - INFO - Saved WARN: Eaglestone, LLC, Eaglestone Holdings, LLC, Eaglestone Intermediate Holdings, LLC, and Eaglestone Shared Services, LLC. (NY)
+2026-01-03 13:00:44,917 - INFO - Saved WARN: Institute of International Education, Inc. (NY)
+2026-01-03 13:00:44,928 - INFO - Saved WARN: Technicolor Creative Services USA, Inc. (NY)
+2026-01-03 13:00:44,939 - INFO - Saved WARN: Marquardt Switches, Inc. (NY)
+2026-01-03 13:00:44,951 - INFO - Saved WARN: Northern Lights Enterprises, Inc. d/b/a Northern Lights Candles (NY)
+2026-01-03 13:00:44,966 - INFO - Saved WARN: Startek USA, Inc. (NY)
+2026-01-03 13:00:44,978 - INFO - Saved WARN: Tri Cor Direct Incorporated, an affiliate of Brady Corporation (NY)
+2026-01-03 13:00:44,989 - INFO - Saved WARN: EEDU, LLC. (NY)
+2026-01-03 13:00:45,001 - INFO - Saved WARN: Pace Field Services, LLC. (NY)
+2026-01-03 13:00:45,013 - INFO - Saved WARN: UltraVolt, Inc., a wholly owned subsidiary of Advanced Energy Industries, Inc. (NY)
+2026-01-03 13:00:45,025 - INFO - Saved WARN: SpencerARL New York, Inc. (NY)
+2026-01-03 13:00:45,036 - INFO - Saved WARN: The College of Saint Rose (NY)
+2026-01-03 13:00:45,048 - INFO - Saved WARN: Catholic Charities of Orange, Sullivan & Ulster (CCOSU) (NY)
+2026-01-03 13:00:45,058 - INFO - Saved WARN: The Pace Companies New York, Inc. (NY)
+2026-01-03 13:00:45,068 - INFO - Saved WARN: Pinnacle Thermal Solutions, LLC. (NY)
+2026-01-03 13:00:45,079 - INFO - Saved WARN: SpencerARL New York, Inc. (NY)
+2026-01-03 13:00:45,090 - INFO - Saved WARN: Staffing Boutique, Inc. (NY)
+2026-01-03 13:00:45,101 - INFO - Saved WARN: Air Products and Chemicals, Inc. (NY)
+2026-01-03 13:00:45,113 - INFO - Saved WARN: Pace Plumbing Corporation (NY)
+2026-01-03 13:00:45,124 - INFO - Saved WARN: Watson Hotel Operator, LLC. dba The Watson Hotel (NY)
+2026-01-03 13:00:45,136 - INFO - Saved WARN: Church World Service, Inc. (NY)
+2026-01-03 13:00:45,146 - INFO - Saved WARN: Mulligan Security, LLC. (NY)
+2026-01-03 13:00:45,157 - INFO - Saved WARN: Frito-Lay, Inc. (NY)
+2026-01-03 13:00:45,168 - INFO - Saved WARN: Barrette Outdoor Living, Inc. (NY)
+2026-01-03 13:00:45,178 - INFO - Saved WARN: Parsons Corporation (NY)
+2026-01-03 13:00:45,189 - INFO - Saved WARN: Parsons Corporation (NY)
+2026-01-03 13:00:45,201 - INFO - Saved WARN: Macy’s Retail Holdings, Inc. (NY)
+2026-01-03 13:00:45,213 - INFO - Saved WARN: Marquardt Switches, Inc. (NY)
+2026-01-03 13:00:45,228 - INFO - Saved WARN: Mulligan Security, LLC. (NY)
+2026-01-03 13:00:45,240 - INFO - Saved WARN: Poly-Pak Industries Group LLC. (NY)
+2026-01-03 13:00:45,250 - INFO - Saved WARN: QuantumScape Battery, Inc. (NY)
+2026-01-03 13:00:45,260 - INFO - Saved WARN: BAMIA 2 LLC d.b.a Reef Technology (NY)
+2026-01-03 13:00:45,271 - INFO - Saved WARN: YANWA, LLC. (NY)
+2026-01-03 13:00:45,281 - INFO - Saved WARN: Evans Bank, National Association (NY)
+2026-01-03 13:00:45,292 - INFO - Saved WARN: Crescent Duck Farm, Inc. (NY)
+2026-01-03 13:00:45,302 - INFO - Saved WARN: Barrie House Coffee Company, LLC. (NY)
+2026-01-03 13:00:45,314 - INFO - Saved WARN: Publishers Clearing House, LLC (NY)
+2026-01-03 13:00:45,332 - INFO - Saved WARN: Semikron Danfross, LLC. (NY)
+2026-01-03 13:00:45,348 - INFO - Saved WARN: Exel, Inc. dba DHL Supply Chain (USA) (NY)
+2026-01-03 13:00:45,361 - INFO - Saved WARN: LiveIntent, Inc. (NY)
+2026-01-03 13:00:45,371 - INFO - Saved WARN: Amscan Inc., a Party City Holdings, Inc. (NY)
+2026-01-03 13:00:45,383 - INFO - Saved WARN: 57th Street Associates d.b.a Rue 57 (NY)
+2026-01-03 13:00:45,393 - INFO - Saved WARN: Venture Forthe, Inc. (NY)
+2026-01-03 13:00:45,403 - INFO - Saved WARN: Barrie House Coffee Company, LLC. (NY)
+2026-01-03 13:00:45,413 - INFO - Saved WARN: The College of Saint Rose (NY)
+2026-01-03 13:00:45,423 - INFO - Saved WARN: HTx Services, L.L.C. (NY)
+2026-01-03 13:00:45,434 - INFO - Saved WARN: East 54 Hotel Management, LLC. d.b.a The Hotel Elysee (NY)
+2026-01-03 13:00:45,444 - INFO - Saved WARN: Legends Hospitality, LLC. (NY)
+2026-01-03 13:00:45,455 - INFO - Saved WARN: Public Health Solutions (NY)
+2026-01-03 13:00:45,465 - INFO - Saved WARN: CINQ NY Health Home IPA, LLC (NY)
+2026-01-03 13:00:45,476 - INFO - Saved WARN: Cold Spring Acquisition, LLC (NY)
+2026-01-03 13:00:45,488 - INFO - Saved WARN: IPRO (Island Peer Review Organization, Inc.) (NY)
+2026-01-03 13:00:45,499 - INFO - Saved WARN: Paramount Global (NY)
+2026-01-03 13:00:45,510 - INFO - Saved WARN: Paramount Global (NY)
+2026-01-03 13:00:45,521 - INFO - Saved WARN: DOTC Delivery, LLC. (NY)
+2026-01-03 13:00:45,521 - INFO - WARN scraper completed: 69/69 records saved
+2026-01-03 13:09:31,269 - INFO - Starting BDC scraper run (Trend Analysis)
+2026-01-03 13:09:31,271 - INFO - Downloading last 4 10-Q filings for ARCC (CIK: 0001287750)
+2026-01-03 13:09:34,372 - INFO - Found 4 10-Q filings
+2026-01-03 13:09:34,438 - INFO - Parsing filing: 0001287750-24-000054 (70.1 MB)
+2026-01-03 13:10:42,352 - INFO - Filing 0001287750-24-000054: non-accrual=85, date=2024-10-30
+2026-01-03 13:10:42,398 - INFO - Parsing filing: 0001287750-25-000020 (51.5 MB)
+2026-01-03 13:11:26,092 - INFO - Filing 0001287750-25-000020: non-accrual=87, date=2025-04-29
+2026-01-03 13:11:26,142 - INFO - Parsing filing: 0001287750-25-000038 (52.7 MB)
+2026-01-03 13:12:17,610 - INFO - Filing 0001287750-25-000038: non-accrual=88, date=2025-07-29
+2026-01-03 13:12:17,677 - INFO - Parsing filing: 0001287750-25-000046 (61.4 MB)
+2026-01-03 13:13:18,727 - INFO - Filing 0001287750-25-000046: non-accrual=88, date=2025-10-28
+2026-01-03 13:13:18,741 - INFO - Saved: Ares Portfolio (Q4 2024) - Risk Score: 85
+2026-01-03 13:13:18,753 - INFO - Saved: Ares Portfolio (Q2 2025) - Risk Score: 87
+2026-01-03 13:13:18,763 - INFO - Saved: Ares Portfolio (Q3 2025) - Risk Score: 88
+2026-01-03 13:13:18,774 - INFO - Saved: Ares Portfolio (Q4 2025) - Risk Score: 88
+2026-01-03 13:13:18,775 - INFO - Trend Analysis: Q1(85) -> Q2(87) -> Q3(88) -> Q4(88). Signal: STABLE
+2026-01-03 13:13:18,775 - INFO - BDC scraper completed: 4/4 records saved
+2026-01-03 13:13:18,775 - ERROR - BDC scraper failed: 'charmap' codec can't encode character '\U0001f7e1' in position 8: character maps to <undefined>
+2026-01-03 13:13:57,491 - INFO - Starting BDC scraper run (Trend Analysis)
+2026-01-03 13:13:57,493 - INFO - Downloading last 4 10-Q filings for ARCC (CIK: 0001287750)
+2026-01-03 13:13:58,630 - INFO - Found 4 10-Q filings
+2026-01-03 13:13:58,677 - INFO - Parsing filing: 0001287750-24-000054 (70.1 MB)
+2026-01-03 13:14:57,852 - INFO - Filing 0001287750-24-000054: non-accrual=85, date=2024-10-30
+2026-01-03 13:14:57,898 - INFO - Parsing filing: 0001287750-25-000020 (51.5 MB)
+2026-01-03 13:15:32,970 - INFO - Filing 0001287750-25-000020: non-accrual=87, date=2025-04-29
+2026-01-03 13:15:33,004 - INFO - Parsing filing: 0001287750-25-000038 (52.7 MB)
+2026-01-03 13:16:16,653 - INFO - Filing 0001287750-25-000038: non-accrual=88, date=2025-07-29
+2026-01-03 13:16:16,692 - INFO - Parsing filing: 0001287750-25-000046 (61.4 MB)
+2026-01-03 13:17:16,747 - INFO - Filing 0001287750-25-000046: non-accrual=88, date=2025-10-28
+2026-01-03 13:17:16,762 - INFO - Saved: Ares Portfolio (Q4 2024) - Risk Score: 85
+2026-01-03 13:17:16,773 - INFO - Saved: Ares Portfolio (Q2 2025) - Risk Score: 87
+2026-01-03 13:17:16,784 - INFO - Saved: Ares Portfolio (Q3 2025) - Risk Score: 88
+2026-01-03 13:17:16,795 - INFO - Saved: Ares Portfolio (Q4 2025) - Risk Score: 88
+2026-01-03 13:17:16,795 - INFO - Trend Analysis: Q1(85) -> Q2(87) -> Q3(88) -> Q4(88). Signal: STABLE
+2026-01-03 13:17:16,795 - INFO - BDC scraper completed: 4/4 records saved
