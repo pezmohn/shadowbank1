@@ -279,42 +279,82 @@ with col3:
 
 # Credit Stress Velocity Chart (BDC Trend)
 st.markdown("---")
-st.markdown("#### Credit Stress Velocity (Ares Capital)")
+st.markdown("#### Credit Stress Velocity")
 
-# Load and filter BDC data for Ares Capital
+# Load BDC data
 loans_df_full = load_loans()
-ares_df = loans_df_full[loans_df_full["fund"] == "Ares Capital"].copy()
 
-if not ares_df.empty and len(ares_df) > 1:
-    # Sort by date and ensure fair_value is numeric
-    ares_df["date_added"] = pd.to_datetime(ares_df["date_added"])
-    ares_df["fair_value"] = pd.to_numeric(ares_df["fair_value"], errors="coerce")
-    ares_df = ares_df.sort_values("date_added")
-
-    # Create chart data
-    chart_data = ares_df.set_index("date_added")[["fair_value"]].rename(
-        columns={"fair_value": "Distress Score (Non-Accrual Count)"}
+if not loans_df_full.empty:
+    # Fund selector
+    available_funds = loans_df_full["fund"].unique().tolist()
+    selected_fund = st.selectbox(
+        "Select Fund for Trend Analysis:",
+        options=available_funds,
+        index=0
     )
 
-    st.line_chart(chart_data)
+    # Filter data for selected fund
+    fund_df = loans_df_full[loans_df_full["fund"] == selected_fund].copy()
 
-    # Calculate trend for annotation
-    start_value = ares_df["fair_value"].iloc[0]
-    latest_value = ares_df["fair_value"].iloc[-1]
+    if not fund_df.empty and len(fund_df) > 1:
+        # Sort by date and ensure fair_value is numeric
+        fund_df["date_added"] = pd.to_datetime(fund_df["date_added"])
+        fund_df["fair_value"] = pd.to_numeric(fund_df["fair_value"], errors="coerce")
+        fund_df = fund_df.sort_values("date_added")
 
-    if start_value > 0:
-        pct_change = ((latest_value - start_value) / start_value) * 100
+        # Create chart data
+        chart_data = fund_df.set_index("date_added")[["fair_value"]].rename(
+            columns={"fair_value": "Distress Score (Non-Accrual Count)"}
+        )
 
-        if latest_value > start_value:
-            st.warning(f"Trend Alert: Credit stress has increased by {pct_change:.1f}% over the last {len(ares_df)} quarters.")
+        st.line_chart(chart_data)
+
+        # Calculate trend for annotation
+        start_value = fund_df["fair_value"].iloc[0]
+        latest_value = fund_df["fair_value"].iloc[-1]
+
+        if start_value > 0:
+            pct_change = ((latest_value - start_value) / start_value) * 100
+
+            if latest_value > start_value:
+                st.warning(f"Trend Alert: {selected_fund} credit stress has increased by {pct_change:.1f}% over the last {len(fund_df)} quarters.")
+            else:
+                st.success(f"Trend Alert: {selected_fund} credit stress is stable or improving.")
         else:
-            st.success("Trend Alert: Credit stress is stable or improving.")
+            st.info(f"Trend Alert: {selected_fund} baseline data unavailable for comparison.")
+    elif not fund_df.empty:
+        st.info(f"Only {len(fund_df)} data point(s) available for {selected_fund}. Need at least 2 quarters for trend analysis.")
     else:
-        st.info("Trend Alert: Baseline data unavailable for comparison.")
-elif not ares_df.empty:
-    st.info(f"Only {len(ares_df)} data point(s) available. Need at least 2 quarters for trend analysis.")
+        st.info(f"No trend data available for {selected_fund}.")
+
+    # Sector Comparison - All funds together
+    st.markdown("##### Sector Comparison (All Funds)")
+
+    # Prepare data for multi-fund comparison
+    loans_df_full["date_added"] = pd.to_datetime(loans_df_full["date_added"])
+    loans_df_full["fair_value"] = pd.to_numeric(loans_df_full["fair_value"], errors="coerce")
+
+    # Pivot to get funds as columns
+    comparison_df = loans_df_full.pivot_table(
+        index="date_added",
+        columns="fund",
+        values="fair_value",
+        aggfunc="first"
+    ).sort_index()
+
+    if not comparison_df.empty and len(comparison_df) > 1:
+        st.line_chart(comparison_df)
+
+        # Find the worst performing fund (highest latest value)
+        latest_values = comparison_df.iloc[-1].dropna()
+        if not latest_values.empty:
+            worst_fund = latest_values.idxmax()
+            worst_value = latest_values.max()
+            st.caption(f"Highest current distress: {worst_fund} ({worst_value:.0f} non-accrual mentions)")
+    else:
+        st.info("Not enough data points for sector comparison.")
 else:
-    st.info("No Ares Capital trend data available. Run the BDC scraper to populate.")
+    st.info("No BDC trend data available. Run the BDC scraper to populate.")
 
 st.divider()
 
