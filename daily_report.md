@@ -1,5 +1,5 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — April 03, 2026
+## Daily Risk Report — April 04, 2026
 
 ---
 
