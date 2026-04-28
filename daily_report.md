@@ -1,5 +1,5 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — April 27, 2026
+## Daily Risk Report — April 28, 2026
 
 ---
 
@@ -14,7 +14,10 @@
 
 ## 📉 BDC Portfolio Alerts
 
-*No new loan data recorded today.*
+### Diversified
+
+- 🟢 **Ares Capital Portfolio (Q2 2026)** (Ares Capital)
+  - Cost: $0 → Fair Value: $88 (+0.0%)
 
 ---
 
