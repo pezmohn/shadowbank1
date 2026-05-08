@@ -1,5 +1,5 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — May 07, 2026
+## Daily Risk Report — May 08, 2026
 
 ---
 
@@ -14,14 +14,7 @@
 
 ## 📉 BDC Portfolio Alerts
 
-### Diversified
-
-- 🟢 **Blackstone Secured Lending Portfolio (Q2 2026)** (Blackstone Secured Lending)
-  - Cost: $0 → Fair Value: $94 (+0.0%)
-- 🟢 **FS KKR Capital Portfolio (Q2 2026)** (FS KKR Capital)
-  - Cost: $0 → Fair Value: $94 (+0.0%)
-- 🟢 **Main Street Capital Portfolio (Q2 2026)** (Main Street Capital)
-  - Cost: $0 → Fair Value: $94 (+0.0%)
+*No new loan data recorded today.*
 
 ---
 
