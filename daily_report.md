@@ -1,5 +1,5 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — July 28, 2026
+## Daily Risk Report — July 29, 2026
 
 ---
 
@@ -14,7 +14,14 @@
 
 ## 📉 BDC Portfolio Alerts
 
-*No new loan data recorded today.*
+### Diversified
+
+- 🟢 **Ares Capital Portfolio (Q3 2026)** (Ares Capital)
+  - Cost: $0 → Fair Value: $88 (+0.0%)
+- 🟢 **Blue Owl Capital Portfolio (Q3 2026)** (Blue Owl Capital)
+  - Cost: $0 → Fair Value: $88 (+0.0%)
+- 🟢 **Blackstone Secured Lending Portfolio (Q3 2026)** (Blackstone Secured Lending)
+  - Cost: $0 → Fair Value: $88 (+0.0%)
 
 ---
 
