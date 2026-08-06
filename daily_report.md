@@ -1,5 +1,5 @@
 # 🏦 Shadow Bank Risk Observatory
-## Daily Risk Report — August 05, 2026
+## Daily Risk Report — August 06, 2026
 
 ---
 
@@ -14,7 +14,12 @@
 
 ## 📉 BDC Portfolio Alerts
 
-*No new loan data recorded today.*
+### Diversified
+
+- 🟢 **FS KKR Capital Portfolio (Q3 2026)** (FS KKR Capital)
+  - Cost: $0 → Fair Value: $35 (+0.0%)
+- 🟢 **Main Street Capital Portfolio (Q3 2026)** (Main Street Capital)
+  - Cost: $0 → Fair Value: $35 (+0.0%)
 
 ---
 
